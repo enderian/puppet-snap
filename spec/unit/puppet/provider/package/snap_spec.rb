@@ -21,6 +21,7 @@ describe Puppet::Type.type(:package).provider(:snap) do
 
   context 'should have provider features' do
     it { is_expected.to be_installable }
+    it { is_expected.to be_versionable }
     it { is_expected.to be_install_options }
     it { is_expected.to be_uninstallable }
     it { is_expected.to be_purgeable }
@@ -46,21 +47,21 @@ describe Puppet::Type.type(:package).provider(:snap) do
 
   context 'installing without any option' do
     it 'generates correct request' do
-      response = provider.class.generate_request('install', nil)
+      response = provider.class.generate_request('install', nil, nil)
       expect(response).to eq('action' => 'install')
     end
   end
 
-  context 'installing with channel option' do
+  context 'installing with channel' do
     it 'generates correct request' do
-      response = provider.class.generate_request('install', ['channel=beta'])
+      response = provider.class.generate_request('install', 'beta', nil)
       expect(response).to eq('action' => 'install', 'channel' => 'beta')
     end
   end
 
   context 'installing with classic option' do
     it 'generates correct request' do
-      response = provider.class.generate_request('install', ['classic'])
+      response = provider.class.generate_request('install', nil, ['classic'])
       expect(response).to eq('action' => 'install', 'classic' => true)
     end
   end
@@ -74,7 +75,13 @@ describe Puppet::Type.type(:package).provider(:snap) do
       expect(provider.latest).to eq('6.4')
     end
 
-    it 'with channel specified returns correct version from specified channel' do
+    it 'with channel in install options specified returns correct version from specified channel' do
+      resource[:ensure] = 'latest/beta'
+
+      expect(provider.latest).to eq('6.0')
+    end
+
+    it 'with channel in ensure specified returns correct version from specified channel' do
       resource[:install_options] = ['channel=latest/beta']
 
       expect(provider.latest).to eq('6.0')

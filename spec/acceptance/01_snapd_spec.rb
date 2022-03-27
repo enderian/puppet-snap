@@ -34,6 +34,10 @@ describe 'snapd class' do
       end
 
       it_behaves_like 'an idempotent resource'
+
+      describe command('snap list --unicode=never --color=never') do
+        its(:stdout) { is_expected.to match(%r{hello-world}) }
+      end
     end
 
     describe 'uninstalls package' do
@@ -47,6 +51,10 @@ describe 'snapd class' do
       end
 
       it_behaves_like 'an idempotent resource'
+
+      describe command('snap list --unicode=never --color=never') do
+        its(:stdout) { is_expected.not_to match(%r{hello-world}) }
+      end
     end
   end
 end
