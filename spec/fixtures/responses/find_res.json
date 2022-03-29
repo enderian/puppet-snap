@@ -69,7 +69,7 @@
         "latest/candidate": {
           "revision": "29",
           "confinement": "strict",
-          "version": "6.4",
+          "version": "6.8",
           "channel": "latest/candidate",
           "epoch": {
             "read": [

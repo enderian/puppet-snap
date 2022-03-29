@@ -75,16 +75,23 @@ describe Puppet::Type.type(:package).provider(:snap) do
       expect(provider.latest).to eq('6.4')
     end
 
-    it 'with channel in install options specified returns correct version from specified channel' do
+    it 'with channel specified in ensure returns correct version from specified channel' do
       resource[:ensure] = 'latest/beta'
 
       expect(provider.latest).to eq('6.0')
     end
 
-    it 'with channel in ensure specified returns correct version from specified channel' do
+    it 'with channel specified in install options returns correct version from specified channel' do
       resource[:install_options] = ['channel=latest/beta']
 
       expect(provider.latest).to eq('6.0')
+    end
+
+    it 'with channel specified in both ensure install options returns correct version from specified channel' do
+      resource[:install_options] = ['channel=latest/beta']
+      resource[:ensure] = 'latest/candidate' # this should be preferred
+
+      expect(provider.latest).to eq('6.8')
     end
 
     it 'with non-existent channel' do

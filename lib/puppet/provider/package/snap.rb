@@ -19,13 +19,6 @@ Puppet::Type.type(:package).provide :snap, parent: Puppet::Provider::Package do
     end
   end
 
-  def self.installed_snaps
-    res = PuppetX::Snap::API.get('/v2/snaps')
-    raise Puppet::Error, "Could not find installed snaps (code: #{res['status-code']})" unless [200, 404].include?(res['status-code'])
-
-    res['status-code'] == 200 ? res['result'].map { |hash| hash.slice('name', 'version') } : []
-  end
-
   def query
     self.class.instances.find { |it| it.name == @resource[:name] }
   end
@@ -69,8 +62,8 @@ Puppet::Type.type(:package).provide :snap, parent: Puppet::Provider::Package do
   end
 
   def determine_channel(options = nil)
-    channel = self.class.parse_version_from_ensure(@resource[:ensure])
-    channel ||= self.class.parse_channel(options) if options
+    channel = self.class.channel_from_ensure(@resource[:ensure])
+    channel ||= self.class.channel_from_options(options) if options
     channel ||= 'latest/stable'
     channel
   end
@@ -95,11 +88,7 @@ Puppet::Type.type(:package).provide :snap, parent: Puppet::Provider::Package do
     request
   end
 
-  def self.parse_channel(options)
-    options&.find { |e| %r{channel} =~ e }&.split('=')&.last
-  end
-
-  def self.parse_version_from_ensure(value)
+  def self.channel_from_ensure(value)
     value = value.to_s
     case value
     when 'present', 'absent', 'purged', 'installed', 'latest'
@@ -107,5 +96,18 @@ Puppet::Type.type(:package).provide :snap, parent: Puppet::Provider::Package do
     else
       value
     end
+  end
+
+  def self.channel_from_options(options)
+    options&.find { |e| %r{channel} =~ e }&.split('=')&.last&.tap do |ch|
+      Puppet.warning("Install option 'channel' is deprecated, use ensure => '#{ch}' instead.")
+    end
+  end
+
+  def self.installed_snaps
+    res = PuppetX::Snap::API.get('/v2/snaps')
+    raise Puppet::Error, "Could not find installed snaps (code: #{res['status-code']})" unless [200, 404].include?(res['status-code'])
+
+    res['status-code'] == 200 ? res['result'].map { |hash| hash.slice('name', 'version') } : []
   end
 end
