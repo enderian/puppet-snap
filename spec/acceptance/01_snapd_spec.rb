@@ -57,4 +57,26 @@ describe 'snapd class' do
       end
     end
   end
+
+  context 'package resource with channel specified' do
+    describe 'installs package' do
+      let(:manifest) do
+        <<-PUPPET
+          package { 'hello-world':
+            ensure   => 'candidate',
+            provider => snap,
+          }
+        PUPPET
+      end
+
+      it_behaves_like 'an idempotent resource'
+
+      describe command('snap list --unicode=never --color=never') do
+        its(:stdout) do
+          is_expected.to match(%r{hello-world})
+          is_expected.to match(%r{candidate})
+        end
+      end
+    end
+  end
 end
