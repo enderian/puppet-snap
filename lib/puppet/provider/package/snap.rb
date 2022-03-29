@@ -7,7 +7,10 @@ Puppet::Type.type(:package).provide :snap, parent: Puppet::Provider::Package do
   desc "Package management via Snap.
 
     This provider supports the `install_options` attribute, which allows snap's flags to be
-    passed to Snap. Namely `classic`, `dangerous`, `devmode`, `jailmode`, `channel`."
+    passed to Snap. Namely `classic`, `dangerous`, `devmode`, `jailmode`.
+    
+    The 'channel' install option is deprecated and will be removed in a future release.
+  "
 
   commands snap_cmd: '/usr/bin/snap'
   has_feature :installable, :versionable, :install_options, :uninstallable, :purgeable
